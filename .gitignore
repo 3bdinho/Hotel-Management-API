@@ -1,0 +1,6 @@
+node_modules/
+
+config.env
+
+# Personal notes you don't want to push
+TODO.txt
