@@ -2,7 +2,7 @@ const asyncHandler = require("express-async-handler");
 
 const apiFeatures = require("../utils/apiFeatures");
 const sendResponse = require("../utils/sendResponse");
-const ApiError = require("../utils/apiError");
+const ApiError = require("../utils/ApiError");
 
 // createOne(Model)
 exports.createOne = (Model) =>
