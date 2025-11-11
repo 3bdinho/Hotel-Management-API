@@ -12,9 +12,12 @@ const {
   deleteUser,
   getAllUsers,
   getUser,
+  changeUserPassword,
 } = require("../services/userService");
 
 const router = express.Router();
+
+router.patch("/changePassword/:id", changeUserPassword);
 
 router.route("/").get(getAllUsers).post(createUserValidator, CreateUser);
 router
