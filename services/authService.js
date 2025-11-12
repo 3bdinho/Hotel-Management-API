@@ -49,7 +49,7 @@ exports.login = asyncHandler(async (req, res, next) => {
   });
 });
 
-//@desc   Protect routes
+//@desc   Protect routes (make sure the user is logged in)
 exports.protect = asyncHandler(async (req, res, next) => {
   //1-Check if token exist
   let token;
@@ -94,3 +94,13 @@ exports.protect = asyncHandler(async (req, res, next) => {
   next();
 });
 
+//@desc
+exports.allowedTo = (...roles) =>
+  asyncHandler(async (req, res, next) => {
+    if (!roles.includes(req.user.roles))
+      return next(
+        new ApiError("You are not allowed to access this route", 403)
+      );
+
+    next();
+  });
