@@ -48,3 +48,49 @@ exports.login = asyncHandler(async (req, res, next) => {
     data: { user },
   });
 });
+
+//@desc   Protect routes
+exports.protect = asyncHandler(async (req, res, next) => {
+  //1-Check if token exist
+  let token;
+
+  const { authorization } = req.headers;
+  if (authorization && authorization.startsWith("Bearer"))
+    token = authorization.split(" ")[1];
+
+  if (!token)
+    return next(
+      new ApiError(
+        "You are not logged in. Please log in to get access to this route.",
+        401
+      )
+    );
+
+  //2-Verify token
+  const decoded = JWT.verify(token, process.env.JWT_SECRET);
+
+  //3-Check if user exist
+  const user = await User.findById(decoded._id);
+  if (!user)
+    return next(new ApiError("The user that belong to this token ", 401));
+
+  //4-Check if user change his password after token created
+  if (user.passwordChangedAt) {
+    const passChangedTimestamp = parseInt(
+      user.passwordChangedAt.getTime() / 1000,
+      10
+    );
+    //Password changed after token created (error)
+    if (passChangedTimestamp > decoded.iat)
+      return next(
+        new ApiError(
+          "User recently change his password. please login again...",
+          401
+        )
+      );
+  }
+
+  req.user = user;
+  next();
+});
+

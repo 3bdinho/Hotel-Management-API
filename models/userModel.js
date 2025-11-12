@@ -28,6 +28,8 @@ const userSchema = new mongoose.Schema(
       select: false,
     },
 
+    passwordChangedAt: Date,
+
     phone: {
       type: String,
       trim: true,
