@@ -8,6 +8,7 @@ const dbConnection = require("./config/database");
 //Routes
 const userRoute = require("./routes/userRoute");
 const authRoute = require("./routes/authRoute");
+const hotelRoute = require("./routes/hotelRoute");
 
 //Connect with DB
 dbConnection();
@@ -26,6 +27,7 @@ if (process.env.NODE_ENV === "development") {
 // Mount Routes
 app.use("/api/v1/users", userRoute);
 app.use("/api/v1/auth", authRoute);
+app.use("/api/v1/hotels", hotelRoute);
 
 // 404 handler (optional)
 app.all(/.*/, (req, res, next) => {
