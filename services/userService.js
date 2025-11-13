@@ -4,6 +4,7 @@ const bcrypt = require("bcryptjs");
 const User = require("../models/userModel");
 const factory = require("./factoryHandler");
 const sendResponse = require("../utils/sendResponse");
+const ApiError = require("../utils/ApiError");
 
 //@desc   Get all users
 //@route  GET /api/v1/users
@@ -56,6 +57,7 @@ exports.changeUserPassword = asyncHandler(async (req, res, next) => {
     id,
     {
       password: await bcrypt.hash(req.body.password, 12),
+      passwordChangedAt: Date.now(),
     },
     {
       new: true,
