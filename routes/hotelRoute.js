@@ -1,11 +1,10 @@
 const express = require("express");
-// const {
-//   createUserValidator,
-//   updateUserValidator,
-//   deleteUserValidator,
-//   getUserValidator,
-//   changeUserPasswordValidator,
-// } = require("../utils/validators/userValidator");
+const {
+  createHotelValidator,
+  updateHotelValidator,
+  deleteHotelValidator,
+  getHotelValidator,
+} = require("../utils/validators/hotelValidator");
 
 const {
   getHotel,
@@ -17,7 +16,11 @@ const {
 
 const router = express.Router();
 
-router.route("/").post(CreateHotel).get(getAllHotels);
-router.route("/:id").get(getHotel).patch(updateHotle).delete(deleteHotel);
+router.route("/").post(createHotelValidator, CreateHotel).get(getAllHotels);
+router
+  .route("/:id")
+  .get(getHotelValidator, getHotel)
+  .patch(updateHotelValidator, updateHotle)
+  .delete(deleteHotelValidator, deleteHotel);
 
 module.exports = router;
