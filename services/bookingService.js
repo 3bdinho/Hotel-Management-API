@@ -4,6 +4,9 @@ const Booking = require("../models/bookingModel");
 const Room = require("../models/roomModel");
 const ApiError = require("../utils/ApiError");
 
+//@desc   Create new book
+//@route  POST /api/v1/bookings
+//@access public
 exports.createBooking = asyncHandler(async (req, res, next) => {
   const { roomId, hotelId, userId, checkIn, checkOut, price } = req.body;
 
@@ -42,5 +45,47 @@ exports.createBooking = asyncHandler(async (req, res, next) => {
   res.status(201).json({
     status: "success",
     data: newBooking,
+  });
+});
+
+//@desc   Update book status
+//@route  POST /api/v1/bookings
+//@access Private (admin,staff)
+exports.updateBookingStatus = asyncHandler(async (req, res, next) => {
+  //1-Fetch booking by id
+  const booking = await Booking.findById(req.params.id);
+  if (!booking) return next(new ApiError("Booking not found", 404));
+
+  //2-Validate the status sent in the request
+  const validStatuses = ["Pending", "Confirmed", "Cancelled"];
+  if (!validStatuses.includes(req.body.status)) {
+    return next(new ApiError("Invalid booking status", 400));
+  }
+
+  //3-Fetch the room
+  const room = await Room.findById(booking.roomId);
+  if (!room) return next(new ApiError("Room not found", 404));
+
+  //4-Check if the room is under maintenance before confirming
+  if (room.status === "Maintenance" && booking.status === "Confirmed")
+    return next(
+      new ApiError("Cannot confirm booking, room under maintenance", 400)
+    );
+
+  //5-Update booking status
+  booking.status = req.body.status;
+  await booking.save();
+
+  //6-Update room status based on booking status
+  if (booking.status === "Confirmed") room.status = "booked";
+  else if (booking.status === "Cancelled" && room.status !== "Maintenance")
+    room.status = "Available";
+
+  await room.save();
+
+  //7-Send response
+  res.status(200).json({
+    status: "success",
+    data: booking,
   });
 });
