@@ -145,3 +145,43 @@ exports.updateBookingStatus = asyncHandler(async (req, res, next) => {
     data: booking,
   });
 });
+
+//@desc   Update book data
+//@route  POST /api/v1/bookings/:id
+//@access Public
+exports.updateBooking = asyncHandler(async (req, res, next) => {
+  //Check if book exist
+  const booking = await Booking.findById(req.params.id);
+  if (!booking) return next(new ApiError("Booking not found", 404));
+
+  // Merge new values with existing ones
+  const { checkIn, checkOut, roomId } = req.body;
+  const newRoom = roomId || booking.roomId;
+  const newCheckIn = checkIn || booking.checkIn;
+  const newCheckOut = checkOut || booking.checkOut;
+
+  // Validate date range only if dates are being updated
+  if (checkIn || checkOut) {
+    if (!isDateRangeValid(newCheckIn, newCheckOut)) {
+      return next(new ApiError("Invalid date range", 400));
+    }
+  }
+  if (checkIn || checkOut || roomId) {
+    // Check overlapping
+    const available = await isRoomAvailable(newRoom, newCheckIn, newCheckOut);
+    if (!available)
+      return next(new ApiError("Room not available for new dates", 400));
+  }
+
+  //Update booking data
+  booking.roomId = newRoom;
+  booking.checkIn = newCheckIn;
+  booking.checkOut = newCheckOut;
+  await booking.save();
+
+  //Send response
+  res.status(200).json({
+    status: "success",
+    data: booking,
+  });
+});
