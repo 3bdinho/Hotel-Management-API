@@ -3,24 +3,40 @@ const asyncHandler = require("express-async-handler");
 const Booking = require("../models/bookingModel");
 const Room = require("../models/roomModel");
 const ApiError = require("../utils/ApiError");
+const { check } = require("express-validator");
+
+//@desc Helper: Check if room is available for given dates
+const isRoomAvailable = async (roomId, checkIn, checkOut) => {
+  const overlap = await Booking.findOne({
+    roomId,
+    checkIn: { $lt: new Date(checkOut) },
+    checkOut: { $gt: new Date(checkIn) },
+  }).lean();
+
+  return !overlap;
+};
 
 //@desc   Create new book
 //@route  POST /api/v1/bookings
 //@access public
 exports.createBooking = asyncHandler(async (req, res, next) => {
-  const { roomId, hotelId, userId, checkIn, checkOut, price } = req.body;
+  const { roomId, hotelId, userId, checkIn, checkOut } = req.body;
+
+  //Validate date range
+  if (new Date(checkIn) >= new Date(checkOut))
+    return next(new ApiError("Invalid date range", 400));
 
   //check if room exist
   const room = await Room.findById(roomId);
   if (!room) return next(new ApiError("Room not found", 404));
 
+  //check if a room is under maintenance
+  if (room.status === "maintenance")
+    return next(new ApiError("Room is not available right now", 400));
+
   // Check overlapping
-  const overlapping = await Booking.findOne({
-    roomId,
-    checkIn: { $lt: new Date(checkOut) },
-    checkOut: { $gt: new Date(checkIn) },
-  });
-  if (overlapping) {
+  const available = await isRoomAvailable(roomId, checkIn, checkOut);
+  if (!available) {
     return next(new ApiError("Room is already booked for this period", 400));
   }
 
