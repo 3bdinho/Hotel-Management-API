@@ -16,7 +16,7 @@ const isRoomAvailable = async (roomId, checkIn, checkOut) => {
   return !overlap;
 };
 
-//@desc Helper: Check if room is available for given dates
+//@desc Helper: Validate that the room and hotel exist and are correctly linked,and ensure the room is currently available (not under maintenance).
 const roomValidate = async (roomId, hotelId) => {
   //Check if room exist
   const room = await Room.findById(roomId);
@@ -27,7 +27,7 @@ const roomValidate = async (roomId, hotelId) => {
   if (!hotel) return { ok: false, message: "Hotel not found", status: 404 };
 
   //Check if room belongs to hotel
-  if (room.hotelId.toString() !== hotelId)
+  if (room.hotel.toString() !== hotelId)
     return {
       ok: false,
       message: "Room does not belong to this hotel",

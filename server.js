@@ -10,6 +10,7 @@ const userRoute = require("./routes/userRoute");
 const authRoute = require("./routes/authRoute");
 const hotelRoute = require("./routes/hotelRoute");
 const roomRoute = require("./routes/roomRoute");
+const bookingRoute = require("./routes/bookingRoute");
 
 //Connect with DB
 dbConnection();
@@ -30,6 +31,7 @@ app.use("/api/v1/users", userRoute);
 app.use("/api/v1/auth", authRoute);
 app.use("/api/v1/hotels", hotelRoute);
 app.use("/api/v1/rooms", roomRoute);
+app.use("/api/v1/bookings", bookingRoute);
 
 // 404 handler (optional)
 app.all(/.*/, (req, res, next) => {
