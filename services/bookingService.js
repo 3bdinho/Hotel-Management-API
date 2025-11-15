@@ -6,13 +6,16 @@ const Hotel = require("../models/hotelModel");
 const ApiError = require("../utils/ApiError");
 
 //@desc Helper: Check if room is available for given dates
-const isRoomAvailable = async (roomId, checkIn, checkOut) => {
-  const overlap = await Booking.findOne({
+const isRoomAvailable = async (roomId, checkIn, checkOut, bookingId) => {
+  const query = {
     roomId,
     checkIn: { $lt: new Date(checkOut) },
     checkOut: { $gt: new Date(checkIn) },
-  }).lean();
+  };
 
+  if (bookingId) query._id = { $ne: bookingId };
+
+  const overlap = await Booking.findOne(query).lean();
   return !overlap;
 };
 
