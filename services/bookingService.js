@@ -2,8 +2,8 @@ const asyncHandler = require("express-async-handler");
 
 const Booking = require("../models/bookingModel");
 const Room = require("../models/roomModel");
+const Hotel = require("../models/hotelModel");
 const ApiError = require("../utils/ApiError");
-const { check } = require("express-validator");
 
 //@desc Helper: Check if room is available for given dates
 const isRoomAvailable = async (roomId, checkIn, checkOut) => {
@@ -16,6 +16,35 @@ const isRoomAvailable = async (roomId, checkIn, checkOut) => {
   return !overlap;
 };
 
+//@desc Helper: Check if room is available for given dates
+const roomValidate = async (roomId, hotelId) => {
+  //Check if room exist
+  const room = await Room.findById(roomId);
+  if (!room) return { ok: false, message: "Room not found", status: 404 };
+
+  //Check if hotel exist
+  const hotel = await Hotel.findById(hotelId);
+  if (!hotel) return { ok: false, message: "Hotel not found", status: 404 };
+
+  //Check if room belongs to hotel
+  if (room.hotelId.toString() !== hotelId)
+    return {
+      ok: false,
+      message: "Room does not belong to this hotel",
+      status: 400,
+    };
+
+  //Check if a room is under maintenance
+  if (room.status === "maintenance")
+    return {
+      ok: false,
+      message: "Room is not available right now",
+      status: 400,
+    };
+
+  return { ok: true, room };
+};
+
 //@desc   Create new book
 //@route  POST /api/v1/bookings
 //@access public
@@ -26,13 +55,12 @@ exports.createBooking = asyncHandler(async (req, res, next) => {
   if (new Date(checkIn) >= new Date(checkOut))
     return next(new ApiError("Invalid date range", 400));
 
-  //check if room exist
-  const room = await Room.findById(roomId);
-  if (!room) return next(new ApiError("Room not found", 404));
+  // Validate room & hotel
+  const validation = await roomValidate(roomId, hotelId);
+  if (!validation.ok)
+    return next(new ApiError(validation.message, validation.status));
 
-  //check if a room is under maintenance
-  if (room.status === "maintenance")
-    return next(new ApiError("Room is not available right now", 400));
+  const room = validation.room;
 
   // Check overlapping
   const available = await isRoomAvailable(roomId, checkIn, checkOut);
