@@ -45,14 +45,26 @@ const roomValidate = async (roomId, hotelId) => {
   return { ok: true, room };
 };
 
+//@desc Helper: check if dates range valide
+const isDateRangeValid = (checkIn, checkOut) => {
+  const start = new Date(checkIn);
+  const end = new Date(checkOut);
+
+  // Validate both dates
+  if (isNaN(start).getTime() || isNaN(end).getTime()) return false;
+
+  // Ensure check-in is strictly before check-out
+  return start < end;
+};
+
 //@desc   Create new book
 //@route  POST /api/v1/bookings
-//@access public
+//@access Public
 exports.createBooking = asyncHandler(async (req, res, next) => {
   const { roomId, hotelId, userId, checkIn, checkOut } = req.body;
 
   //Validate date range
-  if (new Date(checkIn) >= new Date(checkOut))
+  if (!isDateRangeValid(checkIn, checkOut))
     return next(new ApiError("Invalid date range", 400));
 
   // Validate room & hotel
@@ -93,7 +105,7 @@ exports.createBooking = asyncHandler(async (req, res, next) => {
 });
 
 //@desc   Update book status
-//@route  POST /api/v1/bookings
+//@route  POST /api/v1/bookings/:id/updateStatus
 //@access Private (admin,staff)
 exports.updateBookingStatus = asyncHandler(async (req, res, next) => {
   //1-Fetch booking by id
