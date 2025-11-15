@@ -54,7 +54,7 @@ const isDateRangeValid = (checkIn, checkOut) => {
   const end = new Date(checkOut);
 
   // Validate both dates
-  if (isNaN(start).getTime() || isNaN(end).getTime()) return false;
+  if (isNaN(start.getTime()) || isNaN(end.getTime())) return false;
 
   // Ensure check-in is strictly before check-out
   return start < end;
@@ -157,6 +157,20 @@ exports.updateBooking = asyncHandler(async (req, res, next) => {
   const booking = await Booking.findById(req.params.id);
   if (!booking) return next(new ApiError("Booking not found", 404));
 
+  //Prevent updates if booking is Confirmed
+  if (booking.status === "confirmed")
+    return next(new ApiError("Confirmed bookings cannot be updated", 400));
+
+  //Prevent updates if user is not the owner or admin
+  if (
+    booking.userId.toString() !== req.user._id.toString() &&
+    req.user.role === "user"
+  ) {
+    return next(
+      new ApiError("You are not authorized to update this booking", 403)
+    );
+  }
+
   // Merge new values with existing ones
   const { checkIn, checkOut, roomId } = req.body;
   const newRoom = roomId || booking.roomId;
@@ -171,7 +185,12 @@ exports.updateBooking = asyncHandler(async (req, res, next) => {
   }
   if (checkIn || checkOut || roomId) {
     // Check overlapping
-    const available = await isRoomAvailable(newRoom, newCheckIn, newCheckOut);
+    const available = await isRoomAvailable(
+      newRoom,
+      newCheckIn,
+      newCheckOut,
+      booking._id
+    );
     if (!available)
       return next(new ApiError("Room not available for new dates", 400));
   }
