@@ -16,9 +16,20 @@ const bookingSchema = new mongoose.Schema(
 
     statusHistory: [
       {
-        status: "confirmed",
-        changedBy: userId,
-        time: Date.now(),
+        status: {
+          type: String,
+          enum: ["Pending", "Confirmed", "Cancelled"],
+          required: true,
+        },
+        changedBy: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "User",
+          required: true,
+        },
+        time: {
+          type: Date,
+          default: Date.now,
+        },
       },
     ],
   },
