@@ -149,20 +149,19 @@ exports.updateBookingStatus = asyncHandler(async (req, res, next) => {
       booking._id
     );
     if (!available)
-      return next(new ApiError("Room already booked for this period"), 400);
+      return next(new ApiError("Room already booked for this period", 400));
   }
 
   //7-Update booking status
   booking.status = newStatus;
   booking.statusHistory.push({
     status: newStatus,
-    time: new Date(),
     changedBy: req.user._id,
   });
   await booking.save();
 
   //6-Update room status based on booking status
-  if (booking.status === "Confirmed") room.status = "booked";
+  if (booking.status === "Confirmed") room.status = "Booked";
   else if (booking.status === "Cancelled" && room.status !== "Maintenance")
     room.status = "Available";
 
@@ -184,7 +183,7 @@ exports.updateBooking = asyncHandler(async (req, res, next) => {
   if (!booking) return next(new ApiError("Booking not found", 404));
 
   //Prevent updates if booking is Confirmed
-  if (booking.status === "confirmed")
+  if (booking.status === "Confirmed")
     return next(new ApiError("Confirmed bookings cannot be updated", 400));
 
   //Prevent updates if user is not the owner or admin
@@ -225,6 +224,13 @@ exports.updateBooking = asyncHandler(async (req, res, next) => {
   booking.roomId = newRoom;
   booking.checkIn = newCheckIn;
   booking.checkOut = newCheckOut;
+
+  // Push into statusHistory for audit trail
+  booking.statusHistory.push({
+    status: "Updated",
+    changedBy: req.user._id,
+  });
+  
   await booking.save();
 
   //Send response

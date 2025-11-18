@@ -26,7 +26,7 @@ const roomSchema = new mongoose.Schema(
 
     status: {
       type: String,
-      enum: ["available", "booked", "maintenance"],
+      enum: ["Available", "Booked", "Maintenance"],
       default: "available",
     },
 
