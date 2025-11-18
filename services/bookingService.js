@@ -4,6 +4,7 @@ const Booking = require("../models/bookingModel");
 const Room = require("../models/roomModel");
 const Hotel = require("../models/hotelModel");
 const ApiError = require("../utils/ApiError");
+const APIFeatures = require("../utils/apiFeatures");
 
 //@desc Helper: Check if room is available for given dates
 const isRoomAvailable = async (roomId, checkIn, checkOut, bookingId) => {
@@ -205,5 +206,51 @@ exports.updateBooking = asyncHandler(async (req, res, next) => {
   res.status(200).json({
     status: "success",
     data: booking,
+  });
+});
+
+//@desc   Get all bookings
+//@route  GET /api/v1/bookings
+//@access Private (admin,staff)
+exports.getAllBookings = asyncHandler(async (req, res, next) => {
+  let query;
+  let filter = {};
+
+  if (req.user.role === "admin") {
+    // Admins see all bookings
+    query = Booking.find()
+      .populate("roomId")
+      .populate({ path: "roomId", populate: { path: "hotel" } });
+  } else if (req.user.role === "staff") {
+    if (!req.user.hotelId) {
+      return next(new ApiError("Staff must be assigned to a hotel", 400));
+    }
+
+    // Staff see only bookings for their hotel
+    filter = { hotelId: req.user.hotelId };
+    query = Booking.find(filter)
+      .populate("roomId")
+      .populate({ path: "roomId", populate: { path: "hotel" } });
+  } else {
+    return next(new ApiError("Not authorized to view booking"), 403);
+  }
+
+  // Count documents for pagination
+  const countDocuments = await Booking.countDocuments(filter);
+
+  // Apply API features
+  const features = new APIFeatures(query, req.query)
+    .filter()
+    .sort()
+    .limitFields()
+    .paginate(countDocuments);
+
+  const bookings = await features.query;
+
+  res.status(200).json({
+    status: "success",
+    results: bookings.length,
+    pagination: features.paginationResult,
+    data: bookings,
   });
 });
