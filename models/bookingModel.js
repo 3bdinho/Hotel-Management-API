@@ -13,6 +13,14 @@ const bookingSchema = new mongoose.Schema(
       enum: ["Pending", "Confirmed", "Cancelled"],
       default: "Pending",
     },
+
+    statusHistory: [
+      {
+        status: "confirmed",
+        changedBy: userId,
+        time: Date.now(),
+      },
+    ],
   },
   { timestamps: true }
 );
