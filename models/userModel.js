@@ -50,6 +50,15 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+
+    //Link staff to a hotel
+    hotelId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Hotel",
+      required: function () {
+        return this.role === "staff";
+      },
+    },
   },
   { timestamps: true }
 );
