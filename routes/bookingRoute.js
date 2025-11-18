@@ -4,6 +4,7 @@ const {
   updateBookingStatus,
   updateBooking,
   getAllBookings,
+  getBookingWithId,
 } = require("../services/bookingService");
 
 const { protect, allowedTo } = require("../services/authService");
@@ -14,6 +15,13 @@ router
   .route("/")
   .post(protect, allowedTo("admin", "staff", "user"), createBooking)
   .get(protect, allowedTo("admin", "staff"), getAllBookings);
+
+router.get(
+  "/:id",
+  protect,
+  allowedTo("admin", "staff", "user"),
+  getBookingWithId
+);
 
 router.patch(
   "/:id/updateStatus",

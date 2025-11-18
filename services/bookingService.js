@@ -254,3 +254,32 @@ exports.getAllBookings = asyncHandler(async (req, res, next) => {
     data: bookings,
   });
 });
+
+//@desc   Get specific booking
+//@route  GET /api/v1/bookings/:id
+//@access Public
+exports.getBookingWithId = asyncHandler(async (req, res, next) => {
+  const booking = await Booking.findById(req.params.id)
+    .populate("roomId")
+    .populate({ path: "roomId", populate: { path: "hotel" } });
+
+  if (!booking) return next(new ApiError("Booking not found", 404));
+
+  // Role-based access control
+  if (req.user.role === "admin") {
+    // Admins can view any booking
+  } else if (req.user.role === "staff") {
+    if (req.user.hotelId.toString() !== booking.roomId.hotel.toString())
+      return next(new ApiError("Not authorized to view this booking", 403));
+  } else if (req.user.role === "user") {
+    if (req.user._id.toString() !== booking.userId.toString())
+      return next(new ApiError("Not authorized to view this booking", 403));
+  } else {
+    return next(new ApiError("Not authorized", 403));
+  }
+
+  res.status(200).json({
+    status: "success",
+    data: booking,
+  });
+});
