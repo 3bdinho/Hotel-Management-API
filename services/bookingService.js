@@ -230,7 +230,7 @@ exports.updateBooking = asyncHandler(async (req, res, next) => {
     status: "Updated",
     changedBy: req.user._id,
   });
-  
+
   await booking.save();
 
   //Send response
@@ -311,6 +311,56 @@ exports.getBookingWithId = asyncHandler(async (req, res, next) => {
 
   res.status(200).json({
     status: "success",
+    data: booking,
+  });
+});
+
+//@desc   Cancel a booking
+//@route  POST /api/v1/bookings/:id/cancel
+//@access Private
+exports.cancelBooking = asyncHandler(async (req, res, next) => {
+  //1-Fetch booking by id
+  const booking = await Booking.findById(req.params.id);
+  if (!booking) return next(new ApiError("Booking not found", 404));
+
+  //2-Role-based access
+  if (
+    req.user.role === "user" &&
+    booking.userId.toString() !== req.user._id.toString()
+  )
+    return next(
+      new ApiError("You are not authorized to cancel this booking", 403)
+    );
+
+  //3-Prevent cancellation after check-in date
+  if (new Date() >= booking.checkIn) {
+    return next(new ApiError("Cannot cancel after check-in date", 400));
+  }
+
+  //4-Prevent redundant cancellation
+  if (booking.status === "Cancelled") {
+    return next(new ApiError("Booking is already Cancelled", 400));
+  }
+
+  //5-Update booking status
+  booking.status = "Cancelled";
+  booking.statusHistory.push({
+    status: "Cancelled",
+    changedBy: req.user._id,
+  });
+  await booking.save();
+
+  //6-Update room status if not under maintenance
+  const room = await Room.findById(booking.roomId);
+  if (room && room.status !== "Maintenance") {
+    room.status = "Available";
+    await room.save();
+  }
+
+  //7-Send response
+  res.status(200).json({
+    status: "success",
+    message: "Booking cancelled successfully",
     data: booking,
   });
 });
