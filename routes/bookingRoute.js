@@ -5,6 +5,7 @@ const {
   updateBooking,
   getAllBookings,
   getBookingWithId,
+  cancelBooking,
 } = require("../services/bookingService");
 
 const { protect, allowedTo } = require("../services/authService");
@@ -36,5 +37,7 @@ router.patch(
   allowedTo("admin", "staff", "user"),
   updateBooking
 );
+
+router.patch("/:id/cancel", protect, allowedTo("user"), cancelBooking);
 
 module.exports = router;

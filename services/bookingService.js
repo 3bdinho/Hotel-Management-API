@@ -1,4 +1,5 @@
 const asyncHandler = require("express-async-handler");
+const cron = require("node-cron");
 
 const Booking = require("../models/bookingModel");
 const Room = require("../models/roomModel");
@@ -317,7 +318,7 @@ exports.getBookingWithId = asyncHandler(async (req, res, next) => {
 
 //@desc   Cancel a booking
 //@route  POST /api/v1/bookings/:id/cancel
-//@access Private
+//@access Private (user)
 exports.cancelBooking = asyncHandler(async (req, res, next) => {
   //1-Fetch booking by id
   const booking = await Booking.findById(req.params.id);

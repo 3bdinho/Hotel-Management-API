@@ -1,10 +1,12 @@
 const express = require("express");
 const dotenv = require("dotenv");
 const morgan = require("morgan");
+const cron = require("node-cron");
 
 dotenv.config({ path: "config.env" });
 const globalErrorHandler = require("./Middlewares/errorMiddleware");
 const dbConnection = require("./config/database");
+const { autoLifecycleJob } = require("./utils/bookingLifecycle");
 //Routes
 const userRoute = require("./routes/userRoute");
 const authRoute = require("./routes/authRoute");
@@ -25,6 +27,10 @@ if (process.env.NODE_ENV === "development") {
   app.use(morgan("dev"));
   console.log(`mode: ${process.env.NODE_ENV}`);
 }
+
+cron.schedule("0 * * * *", async () => {
+  await autoLifecycleJob();
+});
 
 // Mount Routes
 app.use("/api/v1/users", userRoute);

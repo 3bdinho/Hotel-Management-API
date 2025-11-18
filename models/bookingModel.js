@@ -10,7 +10,7 @@ const bookingSchema = new mongoose.Schema(
     totalPrice: Number,
     status: {
       type: String,
-      enum: ["Pending", "Confirmed", "Cancelled"],
+      enum: ["Pending", "Confirmed", "Cancelled", "CheckedIn", "CheckedOut"],
       default: "Pending",
     },
 
