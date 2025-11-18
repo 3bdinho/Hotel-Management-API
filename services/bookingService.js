@@ -116,24 +116,49 @@ exports.updateBookingStatus = asyncHandler(async (req, res, next) => {
   const booking = await Booking.findById(req.params.id);
   if (!booking) return next(new ApiError("Booking not found", 404));
 
-  //2-Validate the status sent in the request
+  //2-Role-based access
+  if (
+    req.user.role === "staff" &&
+    req.user.hotelId.toString() !== booking.hotelId.toString()
+  )
+    return next(new ApiError("Staff can only access their hotel scope", 403));
+
+  //3-Validate the status sent in the request
   const validStatuses = ["Pending", "Confirmed", "Cancelled"];
+  const newStatus = req.body.status;
   if (!validStatuses.includes(req.body.status)) {
     return next(new ApiError("Invalid booking status", 400));
   }
 
-  //3-Fetch the room
+  //4-Fetch the room
   const room = await Room.findById(booking.roomId);
   if (!room) return next(new ApiError("Room not found", 404));
 
-  //4-Check if the room is under maintenance before confirming
-  if (room.status === "Maintenance" && booking.status === "Confirmed")
+  //5-Check if the room is under maintenance before confirming
+  if (room.status === "Maintenance" && newStatus === "Confirmed")
     return next(
       new ApiError("Cannot confirm booking, room under maintenance", 400)
     );
 
-  //5-Update booking status
-  booking.status = req.body.status;
+  //6-Prevent overlapping confirmed bookings
+  if (newStatus === "Confirmed") {
+    const available = await isRoomAvailable(
+      booking.roomId,
+      booking.checkIn,
+      booking.checkOut,
+      booking._id
+    );
+    if (!available)
+      return next(new ApiError("Room already booked for this period"), 400);
+  }
+
+  //7-Update booking status
+  booking.status = newStatus;
+  booking.statusHistory.push({
+    status: newStatus,
+    time: new Date(),
+    changedBy: req.user._id,
+  });
   await booking.save();
 
   //6-Update room status based on booking status
