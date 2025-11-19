@@ -6,9 +6,9 @@ const {
   getAllBookings,
   getBookingWithId,
   cancelBooking,
-} = require("../services/bookingService");
+} = require("../controllers/bookingController");
 
-const { protect, allowedTo } = require("../services/authService");
+const { protect, allowedTo } = require("../controllers/authController");
 
 const router = express.Router();
 
