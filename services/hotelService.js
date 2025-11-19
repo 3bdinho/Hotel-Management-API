@@ -1,12 +1,12 @@
 const Hotel = require("../models/hotelModel");
 const factory = require("./factoryHandler");
 
-exports.getAllHotels = factory.getAll(Hotel);
+exports.getAllHotelsService = factory.getAll(Hotel);
 
-exports.getHotel = factory.getOne(Hotel);
+exports.getHotelService = factory.getOne(Hotel);
 
-exports.createHotel = factory.createOne(Hotel);
+exports.createHotelService = factory.createOne(Hotel);
 
-exports.updateHotel = factory.updateOne(Hotel);
+exports.updateHotelService = factory.updateOne(Hotel);
 
-exports.deleteHotel = factory.deleteOne(Hotel);
+exports.deleteHotelService = factory.deleteOne(Hotel);
