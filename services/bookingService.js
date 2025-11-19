@@ -65,9 +65,7 @@ const isDateRangeValid = (checkIn, checkOut) => {
 };
 
 //@desc   Create new book
-//@route  POST /api/v1/bookings
-//@access Public
-exports.createBooking = asyncHandler(async (req, res, next) => {
+exports.createBookingService = async (req, res, next) => {
   const { roomId, hotelId, userId, checkIn, checkOut } = req.body;
 
   //Validate date range
@@ -113,16 +111,11 @@ exports.createBooking = asyncHandler(async (req, res, next) => {
     html: options.html,
   });
 
-  res.status(201).json({
-    status: "success",
-    data: newBooking,
-  });
-});
+  return newBooking;
+};
 
 //@desc   Update book status
-//@route  POST /api/v1/bookings/:id/updateStatus
-//@access Private (admin,staff)
-exports.updateBookingStatus = asyncHandler(async (req, res, next) => {
+exports.updateBookingStatusService = async (req, res, next) => {
   //1-Fetch booking by id
   const booking = await Booking.findById(req.params.id).populate("userId");
   if (!booking) return next(new ApiError("Booking not found", 404));
@@ -186,17 +179,11 @@ exports.updateBookingStatus = asyncHandler(async (req, res, next) => {
 
   await room.save();
 
-  //7-Send response
-  res.status(200).json({
-    status: "success",
-    data: booking,
-  });
-});
+  return booking;
+};
 
 //@desc   Update book data
-//@route  POST /api/v1/bookings/:id
-//@access Public
-exports.updateBooking = asyncHandler(async (req, res, next) => {
+exports.updateBookingService = async (req, res, next) => {
   //Check if book exist
   const booking = await Booking.findById(req.params.id).populate("userId");
   if (!booking) return next(new ApiError("Booking not found", 404));
@@ -253,24 +240,18 @@ exports.updateBooking = asyncHandler(async (req, res, next) => {
   await booking.save();
 
   //send mail
-  const options = setMailOptions("UpdateData", req.user.name,booking);
+  const options = setMailOptions("UpdateData", req.user.name, booking);
   await sendEmail({
     to: req.user.email,
     subject: options.subject,
     html: options.html,
   });
 
-  //Send response
-  res.status(200).json({
-    status: "success",
-    data: booking,
-  });
-}); //send
+  return booking;
+};
 
 //@desc   Get all bookings
-//@route  GET /api/v1/bookings
-//@access Private (admin,staff)
-exports.getAllBookings = asyncHandler(async (req, res, next) => {
+exports.getAllBookingsService = async (req, res, next) => {
   let query;
   let filter = {};
 
@@ -305,18 +286,11 @@ exports.getAllBookings = asyncHandler(async (req, res, next) => {
 
   const bookings = await features.query;
 
-  res.status(200).json({
-    status: "success",
-    results: bookings.length,
-    pagination: features.paginationResult,
-    data: bookings,
-  });
-});
+  return { bookings, features };
+};
 
 //@desc   Get specific booking
-//@route  GET /api/v1/bookings/:id
-//@access Public
-exports.getBookingWithId = asyncHandler(async (req, res, next) => {
+exports.getBookingWithIdService  = async (req, res, next) => {
   const booking = await Booking.findById(req.params.id)
     .populate("roomId")
     .populate({ path: "roomId", populate: { path: "hotel" } });
@@ -336,16 +310,11 @@ exports.getBookingWithId = asyncHandler(async (req, res, next) => {
     return next(new ApiError("Not authorized", 403));
   }
 
-  res.status(200).json({
-    status: "success",
-    data: booking,
-  });
-});
+  return booking;
+};
 
 //@desc   Cancel a booking
-//@route  POST /api/v1/bookings/:id/cancel
-//@access Private (user)
-exports.cancelBooking = asyncHandler(async (req, res, next) => {
+exports.cancelBookingService = async (req, res, next) => {
   //1-Fetch booking by id
   const booking = await Booking.findById(req.params.id);
   if (!booking) return next(new ApiError("Booking not found", 404));
@@ -384,10 +353,5 @@ exports.cancelBooking = asyncHandler(async (req, res, next) => {
     await room.save();
   }
 
-  //7-Send response
-  res.status(200).json({
-    status: "success",
-    message: "Booking cancelled successfully",
-    data: booking,
-  });
-});
+  return booking;
+};
