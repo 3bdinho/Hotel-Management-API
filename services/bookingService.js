@@ -63,6 +63,30 @@ const isDateRangeValid = (checkIn, checkOut) => {
   return start < end;
 };
 
+//@desc Helper: set mailOptions
+const setMailOptions = (status, name) => {
+  let subject, html;
+  if (status === "Confirmed") {
+    subject = "Booking Confirmed";
+    html = `<div style="font-family: Arial, sans-serif; color: #333; padding: 20px;">
+      <h3>Hotel Booking</h3>
+      <p>Hello ${name},</p>
+      <p>Your booking has been <strong>confirmed</strong>.</p>
+      <p>We look forward to welcoming you!</p>
+    </div>`;
+  } else if (newStatus === "Cancelled") {
+    subject = "Booking Cancelled";
+    html = `<div style="font-family: Arial, sans-serif; color: #333; padding: 20px;">
+      <h3>Hotel Booking</h3>
+      <p>Hello ${name},</p>
+      <p>Your booking has been <strong>cancelled</strong>.</p>
+      <p>If you have any questions, please contact support.</p>
+    </div>`;
+  }
+
+  return { subject, html };
+};
+
 //@desc   Create new book
 //@route  POST /api/v1/bookings
 //@access Public
@@ -120,14 +144,14 @@ exports.createBooking = asyncHandler(async (req, res, next) => {
     status: "success",
     data: newBooking,
   });
-}); //send
+});
 
 //@desc   Update book status
 //@route  POST /api/v1/bookings/:id/updateStatus
 //@access Private (admin,staff)
 exports.updateBookingStatus = asyncHandler(async (req, res, next) => {
   //1-Fetch booking by id
-  const booking = await Booking.findById(req.params.id);
+  const booking = await Booking.findById(req.params.id).populate("userId");
   if (!booking) return next(new ApiError("Booking not found", 404));
 
   //2-Role-based access
@@ -174,6 +198,8 @@ exports.updateBookingStatus = asyncHandler(async (req, res, next) => {
   });
   await booking.save();
 
+  //send mail
+
   //6-Update room status based on booking status
   if (booking.status === "Confirmed") room.status = "Booked";
   else if (booking.status === "Cancelled" && room.status !== "Maintenance")
@@ -186,7 +212,7 @@ exports.updateBookingStatus = asyncHandler(async (req, res, next) => {
     status: "success",
     data: booking,
   });
-}); //send
+});
 
 //@desc   Update book data
 //@route  POST /api/v1/bookings/:id
