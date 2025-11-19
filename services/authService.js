@@ -29,9 +29,7 @@ exports.signup = asyncHandler(async (req, res, next) => {
 //@desc   login
 //@route  POST /api/v1/auth/login
 //@access puplic
-exports.login = asyncHandler(async (req, res, next) => {
-  const { email, password } = req.body;
-
+exports.loginService = async (email, password) => {
   //1-Check if user exists & password is correct
   const user = await User.findOne({ email }).select("+password");
   if (!user || !(await bcrypt.compare(password, user.password))) {
@@ -41,13 +39,8 @@ exports.login = asyncHandler(async (req, res, next) => {
   //2-Generate token
   const token = generateToken(user._id);
 
-  //3-Send response
-  res.status(200).json({
-    status: "success",
-    token,
-    data: { user },
-  });
-});
+  return { user, token };
+};
 
 //@desc   Protect routes (make sure the user is logged in)
 exports.protect = asyncHandler(async (req, res, next) => {
