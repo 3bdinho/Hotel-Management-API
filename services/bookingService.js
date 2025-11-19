@@ -1,6 +1,8 @@
 const asyncHandler = require("express-async-handler");
 const cron = require("node-cron");
 
+const { sendEmail } = require("../utils/sendMail");
+const { setMailOptions } = require("../utils/mailHelper");
 const Booking = require("../models/bookingModel");
 const Room = require("../models/roomModel");
 const Hotel = require("../models/hotelModel");
@@ -103,6 +105,14 @@ exports.createBooking = asyncHandler(async (req, res, next) => {
     totalPrice,
   });
 
+  //Send mail
+  const options = setMailOptions("Created", req.user.name);
+  await sendEmail({
+    to: req.user.email,
+    subject: options.subject,
+    html: options.html,
+  });
+
   res.status(201).json({
     status: "success",
     data: newBooking,
@@ -114,7 +124,7 @@ exports.createBooking = asyncHandler(async (req, res, next) => {
 //@access Private (admin,staff)
 exports.updateBookingStatus = asyncHandler(async (req, res, next) => {
   //1-Fetch booking by id
-  const booking = await Booking.findById(req.params.id);
+  const booking = await Booking.findById(req.params.id).populate("userId");
   if (!booking) return next(new ApiError("Booking not found", 404));
 
   //2-Role-based access
@@ -161,6 +171,14 @@ exports.updateBookingStatus = asyncHandler(async (req, res, next) => {
   });
   await booking.save();
 
+  //send mail
+  const options = setMailOptions(newStatus, booking.userId.name);
+  await sendEmail({
+    to: booking.userId.email,
+    subject: options.subject,
+    html: options.html,
+  });
+
   //6-Update room status based on booking status
   if (booking.status === "Confirmed") room.status = "Booked";
   else if (booking.status === "Cancelled" && room.status !== "Maintenance")
@@ -180,7 +198,7 @@ exports.updateBookingStatus = asyncHandler(async (req, res, next) => {
 //@access Public
 exports.updateBooking = asyncHandler(async (req, res, next) => {
   //Check if book exist
-  const booking = await Booking.findById(req.params.id);
+  const booking = await Booking.findById(req.params.id).populate("userId");
   if (!booking) return next(new ApiError("Booking not found", 404));
 
   //Prevent updates if booking is Confirmed
@@ -234,12 +252,20 @@ exports.updateBooking = asyncHandler(async (req, res, next) => {
 
   await booking.save();
 
+  //send mail
+  const options = setMailOptions("UpdateData", req.user.name,booking);
+  await sendEmail({
+    to: req.user.email,
+    subject: options.subject,
+    html: options.html,
+  });
+
   //Send response
   res.status(200).json({
     status: "success",
     data: booking,
   });
-});
+}); //send
 
 //@desc   Get all bookings
 //@route  GET /api/v1/bookings
