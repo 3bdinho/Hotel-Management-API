@@ -1,6 +1,7 @@
 const asyncHandler = require("express-async-handler");
 const cron = require("node-cron");
 
+const { sendEmail } = require("../utils/sendMail");
 const Booking = require("../models/bookingModel");
 const Room = require("../models/roomModel");
 const Hotel = require("../models/hotelModel");
@@ -103,11 +104,23 @@ exports.createBooking = asyncHandler(async (req, res, next) => {
     totalPrice,
   });
 
+  //Send mail
+  await sendEmail({
+    to: req.user.email,
+    subject: "Booking Completed Successfully – Awaiting Confirmation",
+    html: `<div style="font-family: Arial, sans-serif; color: #333; padding: 20px;">
+    <h3>Hotel Booking</h3>
+  <p>Hello ${req.user.name},</p>
+  <p>Your booking has been created successfully.</p>
+  <p>Thank you for choosing our hotel!</p>
+    </div>`,
+  });
+
   res.status(201).json({
     status: "success",
     data: newBooking,
   });
-});
+}); //send
 
 //@desc   Update book status
 //@route  POST /api/v1/bookings/:id/updateStatus
@@ -173,7 +186,7 @@ exports.updateBookingStatus = asyncHandler(async (req, res, next) => {
     status: "success",
     data: booking,
   });
-});
+}); //send
 
 //@desc   Update book data
 //@route  POST /api/v1/bookings/:id
@@ -239,7 +252,7 @@ exports.updateBooking = asyncHandler(async (req, res, next) => {
     status: "success",
     data: booking,
   });
-});
+}); //send
 
 //@desc   Get all bookings
 //@route  GET /api/v1/bookings
