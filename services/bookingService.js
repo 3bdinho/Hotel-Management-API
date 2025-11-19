@@ -200,7 +200,7 @@ exports.updateBookingStatus = asyncHandler(async (req, res, next) => {
 
   //send mail
   const options = setMailOptions(newStatus, booking.userId.name);
-  sendEmail({
+  await sendEmail({
     to: booking.userId.email,
     subject: options.subject,
     html: options.html,
@@ -225,7 +225,7 @@ exports.updateBookingStatus = asyncHandler(async (req, res, next) => {
 //@access Public
 exports.updateBooking = asyncHandler(async (req, res, next) => {
   //Check if book exist
-  const booking = await Booking.findById(req.params.id);
+  const booking = await Booking.findById(req.params.id).populate("userId");
   if (!booking) return next(new ApiError("Booking not found", 404));
 
   //Prevent updates if booking is Confirmed
@@ -278,6 +278,20 @@ exports.updateBooking = asyncHandler(async (req, res, next) => {
   });
 
   await booking.save();
+
+  //send mail
+  await sendEmail({
+    to: booking.userId.email,
+    subject: "update booking data",
+    html: `<div style="font-family: Arial, sans-serif; color: #333; padding: 20px;">
+      <h3>Hotel Booking</h3>
+      <p>Hello ${booking.userId.name},</p>
+      <p>Your booking has been <strong>Updated</strong>.</p>
+      <p>Your data after update</p>
+      <p>checkIn:${booking.checkIn}</p>
+      <p>checkOut:${booking.checkOut}</p>
+    </div>`,
+  });
 
   //Send response
   res.status(200).json({
