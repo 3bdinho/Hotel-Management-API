@@ -2,6 +2,7 @@ const asyncHandler = require("express-async-handler");
 const cron = require("node-cron");
 
 const { sendEmail } = require("../utils/sendMail");
+const { setMailOptions } = require("../utils/mailHelper");
 const Booking = require("../models/bookingModel");
 const Room = require("../models/roomModel");
 const Hotel = require("../models/hotelModel");
@@ -63,30 +64,6 @@ const isDateRangeValid = (checkIn, checkOut) => {
   return start < end;
 };
 
-//@desc Helper: set mailOptions
-const setMailOptions = (status, name) => {
-  let subject, html;
-  if (status === "Confirmed") {
-    subject = "Booking Confirmed";
-    html = `<div style="font-family: Arial, sans-serif; color: #333; padding: 20px;">
-      <h3>Hotel Booking</h3>
-      <p>Hello ${name},</p>
-      <p>Your booking has been <strong>confirmed</strong>.</p>
-      <p>We look forward to welcoming you!</p>
-    </div>`;
-  } else if (status === "Cancelled") {
-    subject = "Booking Cancelled";
-    html = `<div style="font-family: Arial, sans-serif; color: #333; padding: 20px;">
-      <h3>Hotel Booking</h3>
-      <p>Hello ${name},</p>
-      <p>Your booking has been <strong>cancelled</strong>.</p>
-      <p>If you have any questions, please contact support.</p>
-    </div>`;
-  }
-
-  return { subject, html };
-};
-
 //@desc   Create new book
 //@route  POST /api/v1/bookings
 //@access Public
@@ -129,15 +106,11 @@ exports.createBooking = asyncHandler(async (req, res, next) => {
   });
 
   //Send mail
+  const options = setMailOptions("Created", req.user.name);
   await sendEmail({
     to: req.user.email,
-    subject: "Booking Completed Successfully – Awaiting Confirmation",
-    html: `<div style="font-family: Arial, sans-serif; color: #333; padding: 20px;">
-    <h3>Hotel Booking</h3>
-  <p>Hello ${req.user.name},</p>
-  <p>Your booking has been created successfully.</p>
-  <p>Thank you for choosing our hotel!</p>
-    </div>`,
+    subject: options.subject,
+    html: options.html,
   });
 
   res.status(201).json({
@@ -280,17 +253,11 @@ exports.updateBooking = asyncHandler(async (req, res, next) => {
   await booking.save();
 
   //send mail
+  const options = setMailOptions("UpdateData", req.user.name,booking);
   await sendEmail({
-    to: booking.userId.email,
-    subject: "update booking data",
-    html: `<div style="font-family: Arial, sans-serif; color: #333; padding: 20px;">
-      <h3>Hotel Booking</h3>
-      <p>Hello ${booking.userId.name},</p>
-      <p>Your booking has been <strong>Updated</strong>.</p>
-      <p>Your data after update</p>
-      <p>checkIn:${booking.checkIn}</p>
-      <p>checkOut:${booking.checkOut}</p>
-    </div>`,
+    to: req.user.email,
+    subject: options.subject,
+    html: options.html,
   });
 
   //Send response
