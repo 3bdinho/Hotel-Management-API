@@ -74,7 +74,7 @@ const setMailOptions = (status, name) => {
       <p>Your booking has been <strong>confirmed</strong>.</p>
       <p>We look forward to welcoming you!</p>
     </div>`;
-  } else if (newStatus === "Cancelled") {
+  } else if (status === "Cancelled") {
     subject = "Booking Cancelled";
     html = `<div style="font-family: Arial, sans-serif; color: #333; padding: 20px;">
       <h3>Hotel Booking</h3>
@@ -199,6 +199,12 @@ exports.updateBookingStatus = asyncHandler(async (req, res, next) => {
   await booking.save();
 
   //send mail
+  const options = setMailOptions(newStatus, booking.userId.name);
+  sendEmail({
+    to: booking.userId.email,
+    subject: options.subject,
+    html: options.html,
+  });
 
   //6-Update room status based on booking status
   if (booking.status === "Confirmed") room.status = "Booked";
