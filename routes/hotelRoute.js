@@ -9,18 +9,18 @@ const {
 const {
   getHotel,
   getAllHotels,
-  CreateHotel,
-  updateHotle,
+  createHotel,
+  updateHotel,
   deleteHotel,
-} = require("../services/hotelService");
+} = require("../controllers/hotelController");
 
 const router = express.Router();
 
-router.route("/").post(createHotelValidator, CreateHotel).get(getAllHotels);
+router.route("/").post(createHotelValidator, createHotel).get(getAllHotels);
 router
   .route("/:id")
   .get(getHotelValidator, getHotel)
-  .patch(updateHotelValidator, updateHotle)
+  .patch(updateHotelValidator, updateHotel)
   .delete(deleteHotelValidator, deleteHotel);
 
 module.exports = router;
