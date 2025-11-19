@@ -7,28 +7,13 @@ const ApiError = require("../utils/ApiError");
 const generateToken = require("../utils/generateToken");
 
 //@desc   signup
-//@route  POST /api/v1/auth/signup
-//@access puplic
-exports.signup = asyncHandler(async (req, res, next) => {
-  const { name, email, password } = req.body;
-
-  //1-Create user
+exports.signupService = async ({ name, email, password }) => {
   const newUser = await User.create({ name, email, password });
-
-  //2-Generate token
   const token = generateToken(newUser._id);
-
-  //3-Send response
-  res.status(201).json({
-    status: "success",
-    data: { newUser },
-    token,
-  });
-});
+  return { newUser, token };
+};
 
 //@desc   login
-//@route  POST /api/v1/auth/login
-//@access puplic
 exports.loginService = async (email, password) => {
   //1-Check if user exists & password is correct
   const user = await User.findOne({ email }).select("+password");
@@ -43,57 +28,33 @@ exports.loginService = async (email, password) => {
 };
 
 //@desc   Protect routes (make sure the user is logged in)
-exports.protect = asyncHandler(async (req, res, next) => {
-  //1-Check if token exist
+exports.protectService = async (authorization) => {
   let token;
-
-  const { authorization } = req.headers;
-  if (authorization && authorization.startsWith("Bearer"))
+  if (authorization && authorization.startsWith("Bearer")) {
     token = authorization.split(" ")[1];
+  }
+  if (!token) throw new ApiError("Not logged in", 401);
 
-  if (!token)
-    return next(
-      new ApiError(
-        "You are not logged in. Please log in to get access to this route.",
-        401
-      )
-    );
-
-  //2-Verify token
   const decoded = JWT.verify(token, process.env.JWT_SECRET);
+  const user = await User.findById(decoded.id);
+  if (!user) throw new ApiError("User not found", 401);
 
-  //3-Check if user exist
-  const user = await User.findById(decoded._id);
-  if (!user)
-    return next(new ApiError("The user that belong to this token ", 401));
-
-  //4-Check if user change his password after token created
   if (user.passwordChangedAt) {
     const passChangedTimestamp = parseInt(
       user.passwordChangedAt.getTime() / 1000,
       10
     );
-    //Password changed after token created (error)
-    if (passChangedTimestamp > decoded.iat)
-      return next(
-        new ApiError(
-          "User recently change his password. please login again...",
-          401
-        )
-      );
+    if (passChangedTimestamp > decoded.iat) {
+      throw new ApiError("Password changed recently. Please login again.", 401);
+    }
   }
-
-  req.user = user;
-  next();
-});
+  return user;
+};
 
 //@desc
-exports.allowedTo = (...roles) =>
-  asyncHandler(async (req, res, next) => {
-    if (!roles.includes(req.user.roles))
-      return next(
-        new ApiError("You are not allowed to access this route", 403)
-      );
-
-    next();
-  });
+exports.allowedToService = (userRole, roles) => {
+  if (!roles.includes(userRole)) {
+    throw new ApiError("You are not allowed to access this route", 403);
+  }
+  return true;
+};

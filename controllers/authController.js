@@ -8,19 +8,8 @@ const { loginService } = require("../services/authService");
 //@access puplic
 exports.signup = asyncHandler(async (req, res, next) => {
   const { name, email, password } = req.body;
-
-  //1-Create user
-  const newUser = await User.create({ name, email, password });
-
-  //2-Generate token
-  const token = generateToken(newUser._id);
-
-  //3-Send response
-  res.status(201).json({
-    status: "success",
-    data: { newUser },
-    token,
-  });
+  const { newUser, token } = await signupService({ name, email, password });
+  res.status(201).json({ status: "success", data: { newUser }, token });
 });
 
 //@desc   login
@@ -36,3 +25,15 @@ exports.login = asyncHandler(async (req, res, next) => {
     data: { user },
   });
 });
+
+exports.protect = asyncHandler(async (req, res, next) => {
+  const user = await protectService(req.headers.authorization);
+  req.user = user;
+  next();
+});
+
+exports.allowedTo = (...roles) =>
+  asyncHandler(async (req, res, next) => {
+    allowedToService(req.user.role, roles);
+    next();
+  });
