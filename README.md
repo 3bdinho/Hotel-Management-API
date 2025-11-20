@@ -45,49 +45,6 @@ Hotel-Management-API/
 
 ---
 
-## ⚙️ Installation
-```bash
-# Clone the repo
-git clone https://github.com/3bdinho/Hotel-Management-API.git
-
-# Navigate into the project
-cd Hotel-Management-API
-
-# Install dependencies
-npm install
-
-# Setup environment variables
-cp .env.example .env
-
-▶️ Usage
-# Start the server
-npm start
-
-# Run in development mode
-npm run dev
-
-
-📊API Documentation
-Endpoints are tested and documented using Postman collections.
-
-Import the provided Postman collection to explore and test all routes.
-
-📊 Example Endpoints
-Method	Endpoint	Description
-POST  /auth/register	Register new user
-POST  /auth/login	Login user
-GET   /users	List all users (Admin only)
-POST  /rooms	Create a room (Admin/Staff)
-GET	  /hotels	List all hotels (Admin only)
-
-📈 Roadmap
-[ ] Add booking analytics endpoints
-
-[ ] Expand Postman documentation with examples
-
-[ ] Integrate CI/CD pipeline
-
-[ ] Add unit & integration tests
 
 👨‍💻 Author
 Abdulrahman Backend Developer | Node.js, Automation, Scalable APIs
