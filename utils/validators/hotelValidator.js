@@ -9,11 +9,29 @@ exports.createHotelValidator = [
 ];
 
 exports.updateHotelValidator = [
-  check("id").isMongoId().withMessage("Invalid id format"),
+  check("id")
+    .isMongoId()
+    .withMessage("Invalid id format")
+    .custom((val, { req }) => {
+      if (req.user.role === "staff") {
+        if (!req.user.hotelId || val.toString() !== req.user.hotelId.toString())
+          throw new Error("Staff are not allowed to update other hotels");
+      }
+      return true;
+    }),
   validatorMiddleware,
 ];
 exports.deleteHotelValidator = [
-  check("id").isMongoId().withMessage("Invalid id format"),
+  check("id")
+    .isMongoId()
+    .withMessage("Invalid id format")
+    .custom((val, { req }) => {
+      if (req.user.role === "staff") {
+        if (!req.user.hotelId || val.toString() !== req.user.hotelId.toString())
+          throw new Error("Staff are not allowed to delete other hotels");
+      }
+      return true;
+    }),
   validatorMiddleware,
 ];
 exports.getHotelValidator = [
