@@ -7,20 +7,30 @@ const {
 } = require("../utils/validators/roomValidator");
 
 const {
-  getRoom,
   getAllRooms,
-  CreateRoom,
+  getRoom,
+  createRoom,
   updateRoom,
   deleteRoom,
-} = require("../services/roomService");
+} = require("../controllers/roomController");
+
+const { protect, allowedTo } = require("../controllers/authController");
 
 const router = express.Router();
 
-router.route("/").post(createRoomValidator, CreateRoom).get(getAllRooms);
+router
+  .route("/")
+  .post(protect, allowedTo("admin", "staff"), createRoomValidator, createRoom)
+  .get(protect, allowedTo("admin,user,staff"), getAllRooms);
 router
   .route("/:id")
-  .get(getRoomValidator, getRoom)
-  .patch(updateRoomValidator, updateRoom)
-  .delete(deleteRoomValidator, deleteRoom);
+  .get(protect, allowedTo("admin", "staff"), getRoomValidator, getRoom)
+  .patch(protect, allowedTo("admin", "staff"), updateRoomValidator, updateRoom)
+  .delete(
+    protect,
+    allowedTo("admin", "staff"),
+    deleteRoomValidator,
+    deleteRoom
+  );
 
 module.exports = router;
