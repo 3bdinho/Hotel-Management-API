@@ -7,7 +7,7 @@ const {
 } = require("../services/roomService");
 
 //@desc   Get all rooms
-//@route  GET /api/v1/rooms 
+//@route  GET /api/v1/rooms
 //@access public
 exports.getAllRooms = getAllRoomsService;
 
@@ -19,10 +19,10 @@ exports.getRoom = getRoomService;
 //@desc   Create new room
 //@route  POST /api/v1/rooms
 //@access Private
-exports.createRoom = this.CreateRoomService;
+exports.createRoom = CreateRoomService;
 
 //@desc   Update room data
-//@route  PATCH /api/v1/room/:id
+//@route  PATCH /api/v/room/:id
 //@access Private
 exports.updateRoom = updateRoomService;
 
