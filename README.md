@@ -1,50 +1,38 @@
 # 🏨 Hotel Management API
 
-A backend API built with **Node.js** for managing hotels, rooms, and users. Designed with scalability, automation, and clean modular code.
+A backend API built with **Node.js** for managing hotels, rooms, and users.  
+Built with scalability, automation, and clean modular code in mind.
 
 ---
 
-## 🚀 Features
-- **Authentication & Role-based Access Control**  
-  - Admins, staff, and users with different permissions  
-- **User Management (Admin only)**  
-  - Full CRUD operations for users  
-- **Room Management (Admin & Staff)**  
-  - Create, update, delete, and list rooms  
-- **Hotel Management (Admin only)**  
-  - Manage hotel details and availability  
-- **Booking Management (in progress)**  
-  - Create, update, cancel bookings  
-  - Automated cron jobs for check-in/check-out status transitions  
-- **Notifications**  
-  - Email alerts for booking confirmations, cancellations, and status changes  
-- **Audit Trails**  
-  - Track changes to bookings and user actions  
+## 📖 Overview
+This project provides a RESTful API for hotel management.  
+It supports **role-based access control** for admins and staff, with endpoints for managing users, rooms, and hotels.  
+Bookings and notifications are in progress, with automation planned via cron jobs.
 
 ---
 
-## 📂 Project Structure
-
-Hotel-Management-API/ 
-
-│── config/ # Environment & DB setup 
-
-│── controllers/ # Route logic 
-
-│── models/ # Database schemas 
-
-│── routes/ # API endpoints 
-
-│── services/ # Business logic & helpers 
-
-│── utils/ # Notification templates, validations, helpers 
-
-│── server.js # Entry point 
-
-│── package.json # Dependencies & scripts
+## 🚀 Key Features
+- 🔐 **Authentication & Role-based Access Control** (Admin, Staff, User)
+- 👤 **User Management (Admin only)** — Full CRUD operations
+- 🏨 **Hotel Management (Admin only)** — Manage hotel details and availability
+- 🚪 **Room Management (Admin & Staff)** — Create, update, delete, and list rooms
+- 📅 **Booking Management (in progress)** — Status transitions with cron jobs
+- 📧 **Notifications** — Email alerts for booking confirmations and cancellations
+- 📝 **Audit Trails** — Track changes to bookings and user actions
 
 ---
 
+## 🛠 Tech Stack
 
-👨‍💻 Author
-Abdulrahman Backend Developer | Node.js, Automation, Scalable APIs
+| Layer              | Technology |
+|--------------------|------------|
+| **Runtime**        | Node.js    |
+| **Framework**      | Express.js |
+| **Database**       | MongoDB / Mongoose |
+| **Validation**     | express-validator (custom validations in `utils/`) |
+| **Automation**     | Cron jobs |
+| **Testing**        | Postman collections |
+| **Version Control**| Git & GitHub |
+# Setup environment variables
+cp .env.example .env
