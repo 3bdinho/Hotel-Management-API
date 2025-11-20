@@ -102,7 +102,7 @@ exports.updateBookingValidator = [
 
 // Get Booking By ID Validator
 exports.getBookingByIdValidator = [
-  param("id")
+  check("id")
     .notEmpty()
     .withMessage("Booking ID is required")
     .isMongoId()
@@ -112,7 +112,7 @@ exports.getBookingByIdValidator = [
 
 // Cancel Booking Validator
 exports.cancelBookingValidator = [
-  param("id")
+  check("id")
     .notEmpty()
     .withMessage("Booking ID is required")
     .isMongoId()
