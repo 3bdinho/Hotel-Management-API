@@ -25,6 +25,7 @@ exports.getReview = asyncHandler(async (req, res) => {
 // @access  Private
 exports.getReviews = asyncHandler(async (req, res) => {
   const reviews = await reviewService.findListOfReviews(req, res); 
+  res.status(200).json(reviews);
 });
 
 // @desc    Delete review (soft delete)

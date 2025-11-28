@@ -10,7 +10,7 @@ const router = express.Router();
 
 router
   .route("/")
-  .get(protect, allowedTo("admin", "staff"), getReviews)
+  .get(protect, allowedTo("admin"), getReviews)
   .post(protect, allowedTo("user"), createReview);
 
 router
