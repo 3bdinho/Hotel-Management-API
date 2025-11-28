@@ -16,3 +16,10 @@ exports.createReviewService = async (userId, roomId, rate, comment = "") => {
 
   return review;
 };
+
+exports.findReview = async (reviewId) => {
+  const review = await Review.findById(reviewId);
+  if (!review) throw new Error("No review found.");
+
+  return review;
+};
