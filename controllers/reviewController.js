@@ -19,3 +19,18 @@ exports.getReview = asyncHandler(async (req, res) => {
   const review = await reviewService.findReview(req.params.id);
   res.status(200).json(review);
 });
+
+// @desc    Get all reviews
+// @route   GET /api/reviews
+// @access  Private
+exports.getReviews = asyncHandler(async (req, res) => {
+  const reviews = await reviewService.findListOfReviews(req, res); 
+});
+
+// @desc    Delete review (soft delete)
+// @route   DELETE /api/reviews/:id
+// @access  Private (owner or admin)
+exports.deleteReview = asyncHandler(async (req, res) => {
+  const review = await reviewService.deleteReview(req.params.id, req.user);
+  res.status(200).json({ message: "Review deleted successfully", review });
+});
