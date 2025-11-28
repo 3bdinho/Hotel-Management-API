@@ -1,4 +1,6 @@
 const express = require("express");
+const multer = require("multer");
+
 const {
   createUserValidator,
   updateUserValidator,
@@ -14,9 +16,13 @@ const {
   getAllUsers,
   getUser,
   changeUserPassword,
+  uploadUserImage,
 } = require("../services/userService");
 
+const { protect, allowedTo } = require("../controllers/authController");
 const router = express.Router();
+
+const upload = multer({ dest: "uploads/user" });
 
 router.patch(
   "/changePassword/:id",
@@ -24,7 +30,12 @@ router.patch(
   changeUserPassword
 );
 
-router.route("/").get(getAllUsers).post(createUserValidator, CreateUser);
+router.use(protect, allowedTo("admin"));
+
+router
+  .route("/")
+  .get(getAllUsers)
+  .post(uploadUserImage, createUserValidator, CreateUser);
 router
   .route("/:id")
   .get(getUserValidator, getUser)

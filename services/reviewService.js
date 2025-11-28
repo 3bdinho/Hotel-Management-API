@@ -2,7 +2,7 @@ const asyncHandler = require("express-async-handler");
 const Room = require("../models/roomModel");
 const Review = require("../models/reviewModel");
 const factory = require("../services/factoryHandler");
-exports.createReviewService = async (userId, roomId, rate, comment = "") => {
+exports.createReviewService = async (userId, roomId, rate, comment ) => {
   //Prevent duplicate reviews by same user for same room
   const existingReview = await Review.findOne({ roomId, userId });
   if (existingReview) throw new Error("You have already reviewed this room.");

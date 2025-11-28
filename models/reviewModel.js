@@ -8,7 +8,7 @@ const reviewSchema = mongoose.Schema(
       required: true,
     },
     roomId: {
-      type: mongoose.Schema.type.ObjectId,
+      type: mongoose.Schema.Types.ObjectId,
       ref: "Room",
       required: true,
     },
@@ -18,9 +18,13 @@ const reviewSchema = mongoose.Schema(
       max: 5,
       required: true,
     },
-    Comment: {
+    comment: {
       type: String,
       trim: true,
+    },
+    isActive: {
+      type: Boolean,
+      default: true,
     },
   },
   {
